@@ -13,6 +13,10 @@ The output can then be extended to provide more interesting rules
 between the input and output models. This way the refining-mode of atl
 can be avoided (as that was the reason for developing this script in
 the first place).
+
+Note that the output is not a one-to-one mapping of the input. The
+output is intended to be used as a base for extending the rules by
+hand.
 """
 from xml.dom import minidom
 import sys
@@ -36,11 +40,11 @@ class Rule(object):
     def __str__(self):
         rtype = '%s!%s' % (self.ns, self.name)
         lines = [
-            'rule %s {' % (self.name),
+            'rule %sRule {' % (self.name),
             '%sfrom' % (INDENT),
-            '%s c_in: %s' % (INDENT * 2, rtype),
+            '%sc_in: %s' % (INDENT * 2, rtype),
             '%sto' % (INDENT),
-            '%s c_out: %s (' % (INDENT * 2, rtype),
+            '%sc_out: %s (' % (INDENT * 2, rtype),
         ]
 
         attrs = []
@@ -67,6 +71,8 @@ def get_rule(classifier, ns_prefix):
         if child.tagName == 'eStructuralFeatures':
             attr_name = child.attributes['name'].value
             rule.add_attr(attr_name)
+    if not rule.attrs:
+        rule = None
     return rule
 
 
@@ -84,6 +90,10 @@ def parse_rules(doc, ns_prefix):
         xsi_type = child.attributes['xsi:type'].value
         if child.tagName != 'eClassifiers' or xsi_type != 'ecore:EClass':
             continue
+        # Skip abstract types.
+        abstract = child.attributes.get('abstract', None)
+        if abstract and abstract.value == 'true':
+            continue
         yield get_rule(child, ns_prefix)
 
 
@@ -96,11 +106,14 @@ def main(ecore_file, model_name):
         out.write('module %s;\n' % model_name)
         out.write('create OUT: %s from IN: %s;\n' % (ns_prefix, ns_prefix))
 
+        count = 0
         # Write down the rules.
-        for i, rule in enumerate(rules):
-            out.write('\n%s\n' % str(rule))
+        for rule in rules:
+            if rule:
+                count += 1
+                out.write('\n%s\n' % str(rule))
 
-        print 'Extracted %d rules.' % i
+        print 'Extracted %d rules.' % count
 
 
 if __name__ == '__main__':
