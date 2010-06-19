@@ -116,6 +116,8 @@ def main(ecore_file, model_name):
 
         print 'Extracted %d rules.' % count
 
+    return 0
+
 
 if __name__ == '__main__':
     args = sys.argv[1:]
