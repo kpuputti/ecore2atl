@@ -27,7 +27,7 @@ INDENT = ' ' * 4
 
 
 class Rule(object):
-    """Represent an atl rule that has a list of attributes."""
+    """Represents an atl rule that has a list of attributes."""
 
     def __init__(self, name, ns):
         self.name = name
@@ -71,6 +71,7 @@ def get_rule(classifier, ns_prefix):
         if child.tagName == 'eStructuralFeatures':
             attr_name = child.attributes['name'].value
             rule.add_attr(attr_name)
+    # Don't return rules that have no attributes.
     if not rule.attrs:
         rule = None
     return rule
