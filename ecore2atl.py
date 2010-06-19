@@ -83,7 +83,7 @@ def parse_rules(doc, ns_prefix):
     Rule class instances are parsed from the doc. Only `eClassifiers'
     tags with xsi:type `ecore:EClass' are considered.
     """
-    for i, child in enumerate(doc.documentElement.childNodes):
+    for child in doc.documentElement.childNodes:
         # Skip uninteresting elements.
         if not child or child.nodeType != child.ELEMENT_NODE:
             continue
